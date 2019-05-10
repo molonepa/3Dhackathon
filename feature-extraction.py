@@ -24,19 +24,20 @@ flann = cv2.FlannBasedMatcher(index_params, search_params)
 
 matches = flann.knnMatch(bim_desc,image_desc,k=2)
 good = []
+
 for m,n in matches:
     if m.distance < 0.7*n.distance:
         good.append(m)
 
 
-if len(good)>MIN_MATCH_COUNT:
-    src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+if len(good)>=MIN_MATCH_COUNT:
+    src_pts = np.float32([ bim_kp[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+    dst_pts = np.float32([ image_kp[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
     matchesMask = mask.ravel().tolist()
 
-    h,w = bim.shape
+    h,w,_ = bim.shape
     pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
     dst = cv2.perspectiveTransform(pts,M)
 
@@ -55,10 +56,4 @@ draw_params = dict(matchColor = (0,255,0), # draw matches in green color
 img3 = cv2.drawMatches(bim,bim_kp,image,image_kp,good,None,**draw_params)
 
 plt.imshow(img3, 'gray'),plt.show()
-#cv2.drawKeypoints(bim,bim_kp,bim)
-#cv2.drawKeypoints(image,image_kp,image)
-
-#cv2.imwrite('sift_keypoints.jpg',img)
-##cv2.imshow('BIM-sift_keypoints.jpg',bim)
-#cv2.imshow('IMAGE-sift_keypoints.jpg',image)
 cv2.waitKey(0)
