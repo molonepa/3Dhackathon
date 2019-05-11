@@ -1,18 +1,24 @@
 import bpy
 from random import randint
 
-# Create cube
-# bpy.ops.mesh.primitive_cube_add()
+# Delete default cube
+bpy.ops.object.delete() 
 
+# Model path
 model_path = "/home/enric/Documents/repos/3Dhackathon/models/sample_model/house.stl"
 
-
-#import model
+# Import model
 bpy.ops.import_mesh.stl(filepath=model_path)
 
-# adjust camera
+# Set camera
 bpy.ops.view3d.camera_to_view_selected()
 
-# Render it
-bpy.data.scenes['Scene'].render.filepath = "render_model.png"
-bpy.ops.render.render( write_still=True ) 
+ob = bpy.context.object
+
+for i in range(0,40):
+    ob.rotation_euler = (3*i/40,3*i/40,3*i/40)
+
+    # Render it
+    bpy.data.scenes['Scene'].render.filepath = "output/model_render{}.png".format(i)
+    bpy.ops.render.render( write_still=True ) 
+    

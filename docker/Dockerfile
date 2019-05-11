@@ -1,29 +1,32 @@
-# Select a base image:
+FROM ubuntu:xenial
 
-FROM python:2.7
+LABEL authors="Isaac (Ike) Arias <ikester@gmail.com>"
 
-#Use CUDA 10 (GPU drivers >= 410.48)
-#tensorflow/tensorflow:1.13.1-gpu-py3
+RUN apt-get update && \
+	apt-get install -y \
+		curl \
+		bzip2 \
+		libfreetype6 \
+		libgl1-mesa-dev \
+		libglu1-mesa \
+		libxi6 \
+        python3 \
+        python3-pip \
+		libxrender1 && \
+	apt-get -y autoremove && \
+	rm -rf /var/lib/apt/lists/*
 
-#Use CUDA 9 (GPU drivers >= 384.81)
-#tensorflow/tensorflow:1.9.0-gpu
+RUN pip3 install matplotlib opencv-python
 
-#Use CUDA 8 (GPU drivers >= 367.48)
-#tensorflow/tensorflow:1.4.0-gpu
+ENV BLENDER_MAJOR 2.79
+ENV BLENDER_VERSION 2.79
+ENV BLENDER_BZ2_URL https://mirror.clarkson.edu/blender/release/Blender$BLENDER_MAJOR/blender-$BLENDER_VERSION-linux-glibc219-x86_64.tar.bz2
 
-#nvidia/cuda:8.0-cudnn5-devel
+RUN mkdir /usr/local/blender && \
+	curl -SL "$BLENDER_BZ2_URL" -o blender.tar.bz2 && \
+	tar -jxvf blender.tar.bz2 -C /usr/local/blender --strip-components=1 && \
+	rm blender.tar.bz2
 
-#python:2.7
-#python:3.7
-
-
-# Install OS packages (from requirements_os.txt):
-
-ADD docker/requirements_os.txt .
-RUN apt update -y && apt install -y $(cat requirements_os.txt|grep -v '#')
-
-
-# Install Python packages (from requirements.txt):
-
-ADD docker/requirements.txt .
-RUN pip install -r requirements.txt
+WORKDIR /data
+# VOLUME /data
+# ENTRYPOINT ["/usr/local/blender/blender", "-b"]
